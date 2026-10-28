@@ -2,16 +2,21 @@ package com.example.demo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProductoService {
 
 	private final ProductoRepository productoRepository;
+	private final Validator validator;
 
-	public ProductoService(ProductoRepository productoRepository) {
+	public ProductoService(ProductoRepository productoRepository, Validator validator) {
 		this.productoRepository = productoRepository;
+		this.validator = validator;
 		initSampleData();
 	}
 
@@ -50,7 +55,7 @@ public class ProductoService {
 			return null;
 		}
 
-		Producto producto = new Producto(existingProducto.getNombre(), existingProducto.getCosto(), existingProducto.getPrecio());
+		Producto producto = new Producto(existingProducto.getNombre(), existingProducto.getPrecio(), existingProducto.getCosto());
 		producto.setId(existingProducto.getId());
 
 		updates.forEach((key, value) -> {
@@ -58,10 +63,13 @@ public class ProductoService {
 				case "nombre" -> producto.setNombre(asString(key, value));
 				case "costo" -> producto.setCosto(asDouble(key, value));
 				case "precio" -> producto.setPrecio(asDouble(key, value));
-				default -> {
-				}
+				default -> throw new IllegalArgumentException("Campo de actualización desconocido: '" + key + "'.");
 			}
 		});
+		Set<ConstraintViolation<Producto>> violations = validator.validate(producto);
+		if (!violations.isEmpty()) {
+			throw new IllegalArgumentException(violations.iterator().next().getMessage());
+		}
 		return productoRepository.update(producto);
 	}
 

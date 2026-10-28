@@ -3,6 +3,7 @@ package com.example.demo;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -83,7 +84,7 @@ public class ProductoController {
 			@ApiResponse(responseCode = "400", description = "Solicitud inválida")
 	})
 	public ResponseEntity<Producto> createProducto(
-			@RequestBody @Parameter(description = "Datos del producto a crear") Producto producto) {
+			@Valid @RequestBody @Parameter(description = "Datos del producto a crear") Producto producto) {
 		Producto newProducto = productoService.save(producto);
 		return ResponseEntity.status(HttpStatus.CREATED).body(newProducto);
 	}
@@ -96,7 +97,7 @@ public class ProductoController {
 	})
 	public ResponseEntity<Producto> updateProducto(
 			@PathVariable @Parameter(description = "ID del producto a actualizar") String id,
-			@RequestBody @Parameter(description = "Nuevos datos del producto") Producto producto) {
+			@Valid @RequestBody @Parameter(description = "Nuevos datos del producto") Producto producto) {
 		producto.setId(id);
 		Producto updatedProducto = productoService.update(producto);
 		return updatedProducto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(updatedProducto);
